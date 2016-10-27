@@ -141,18 +141,20 @@ void track_object()
 
 void sendMotorSpeed()
 {
-        byte buffer[2];
+        byte buffer[4];
         buffer[0]=MotorSpeed>>8;
         buffer[1]=MotorSpeed&0xFF;
-        Wire.write(buffer,2);
+        buffer[2]=Input>>8;
+        buffer[3]=Input&0xFF;
+        Wire.write(buffer,4);
 }
 
 void sonarPidCompute()
 {
-        Input=analogRead(A0);
-        Input=map(Input,0,1024,0,50);
-        Input=constrain(Input,0,50);
-        //      Input=(leftSonar.pwDistance);
+//      Input=analogRead(A0);
+//      Input=map(Input,0,1024,0,50);
+//      Input=constrain(Input,0,50);
+        Input=(leftSonar.pwDistance);
 
         double error=Input-Setpoint;
         Output=kp*error;
@@ -167,7 +169,7 @@ void sonarSetTuning(double Kp)
 
 void loop()
 {
-        //track_object();
+        track_object();
 
         leftSonar.readSonar(A2);
         rightSonar.readSonar(A1);
