@@ -18,20 +18,15 @@ Pixy pixy;
 
 byte I2Caddr;
 
-int MotorSpeed; 
-
-// Tesing integers
-int potentiometer;
+int MotorSpeed;
 
 //PID calculation
-int leftSonarError;
-int sonarDesiredPosition=15;
-int proportional;
-long accumulator;
-int integral;
+const int Setpoint=15;
+int Input,kp;
+int32_t Output;
 
 //For troubleshooting delay()
-uint32_t pastTime=0; 
+uint32_t pastTime=0;
 
 class ServoLoop
 {
@@ -87,13 +82,14 @@ maxSonar leftSonar,rightSonar;
 
 maxSonar::maxSonar()
 {
-        unsigned long previousTime=0;
+        //unsigned long previousTime=0;
+        previousTime=0;
 }
 
 void maxSonar::readSonar(const int pwPin)
 {
         const int serialSonarPin=7;
-        long interval=100;
+        const int interval=100;
         pinMode(serialSonarPin,OUTPUT);
         digitalWrite(serialSonarPin,HIGH);
         digitalWrite(serialSonarPin,LOW);
@@ -151,51 +147,58 @@ void sendMotorSpeed()
         Wire.write(buffer,2);
 }
 
+void sonarPidCompute()
+{
+        Input=analogRead(A0);
+        Input=map(Input,0,1024,0,50);
+        Input=constrain(Input,0,50);
+        //      Input=(leftSonar.pwDistance);
+
+        double error=Input-Setpoint;
+        Output=kp*error;
+        MotorSpeed=Output>>3;
+
+}
+
+void sonarSetTuning(double Kp)
+{
+        kp=Kp;
+}
+
 void loop()
 {
-//        track_object();
+        //track_object();
+
         leftSonar.readSonar(A2);
         rightSonar.readSonar(A1);
-	
-	const int sonarPgain=200;
-	const int sonarIgain=100;
-	
 
-//	leftSonarError=sonarDesiredPosition-leftSonar.pwDistance;
-		
-	
-        potentiometer=analogRead(A0);
-	potentiometer=map(potentiometer,0,1024,0,50);
-	potentiometer=constrain(potentiometer,0,50);
+        sonarSetTuning(100);
+        sonarPidCompute();
 
-	leftSonarError=sonarDesiredPosition-potentiometer;
-
-	proportional=leftSonarError*sonarPgain;	
-	accumulator+=leftSonarError;	
-	integral=accumulator*sonarIgain;
- 	MotorSpeed=(proportional+integral)>>5;	
-
-	troubleShoot();
-}	
+        troubleShoot();
+}
 
 void troubleShoot()
 {
-	uint32_t currentTime;
-	const int interval=500;
-	if((currentTime=millis()-pastTime)>=interval){
-	//	Serial.print(leftSonar.pwDistance);
-		Serial.print(potentiometer);
-		Serial.print("\t");
-	//	Serial.print(leftSonarError);
-	//	Serial.print("\t");
-		Serial.print(proportional);
-		Serial.print("\t");
-		Serial.print(integral);
-		Serial.print("\t");
-		Serial.println(MotorSpeed);	
-	//      Serial.print(leftSonar.pwDistance);
-	//      Serial.print("\t");
-	//      Serial.println(rightSonar.pwDistance);
-		pastTime=millis();
-	}
+        uint32_t currentTime;
+        const int interval=500;
+        if((currentTime=millis()-pastTime)>=interval){
+        //      Serial.print(leftSonar.pwDistance);
+        //      Serial.print(potentiometer);
+        //      Serial.print("\t");
+        //      Serial.print(leftSonarError);
+        //      Serial.print("\t");
+        //      Serial.print(proportional);
+        //      Serial.print("\t");
+        //      Serial.print(integral);
+        //      Serial.print("\t");
+        //      Serial.println(MotorSpeed);
+        //      Serial.print(leftSonar.pwDistance);
+        //      Serial.print("\t");
+        //      Serial.println(rightSonar.pwDistance);
+                Serial.print(Input);
+                Serial.print("\t");
+                Serial.println(MotorSpeed);
+                pastTime=millis();
+        }
 }
