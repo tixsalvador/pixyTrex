@@ -14,6 +14,7 @@
 byte I2Caddr;
 
 int MotorSpeed;
+int Input;
 
 void setup()
 {
@@ -39,13 +40,16 @@ byte  I2Caddress()
 
 void getSpeed()
 {
-        Wire.requestFrom(0x06,2);
-        if(Wire.available()==2){
+        Wire.requestFrom(0x06,4);
+        if(Wire.available()==4){
                 MotorSpeed=Wire.read()<<8|Wire.read();
+                Input=Wire.read()<<8|Wire.read();
         }
         else {
                 Serial.println("Cannot connect to Master");
         }
+        MotorSpeed=map(MotorSpeed,-188,425,0,255);
+        MotorSpeed=constrain(MotorSpeed,0,255);
 }
 
 void forward(int leftSpeed, int rightSpeed)
@@ -63,5 +67,7 @@ void loop()
         delay(100);
         getSpeed();
         forward(MotorSpeed,MotorSpeed);
+        Serial.print(Input);
+        Serial.print("\t");
         Serial.println(MotorSpeed);
 }
