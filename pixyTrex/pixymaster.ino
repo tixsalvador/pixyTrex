@@ -159,6 +159,8 @@ void sonarPidCompute()
         double error=Input-Setpoint;
         Output=kp*error;
         MotorSpeed=Output>>3;
+	MotorSpeed=map(MotorSpeed,-188,425,0,255);
+	MotorSpeed=constrain(MotorSpeed,0,255);
 
 }
 
@@ -176,7 +178,7 @@ void loop()
 
         sonarSetTuning(100);
         sonarPidCompute();
-
+	
         troubleShoot();
 }
 
