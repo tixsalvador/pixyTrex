@@ -1,11 +1,7 @@
-//Added PID computation on slave
-//Added troubleshoot function
 //Remove motorspeed map and constrain.
 
 #include <EEPROM.h>
 #include <Wire.h>
-
-#define INPUT_Potentiometer //For troubleshooting Input using potentiometer
 
 #define leftMotorDirPin 2
 #define leftMotorPWMPin 3
@@ -17,12 +13,9 @@
 
 byte I2Caddr;
 
-//Sonar Pid variables
-const int Setpoint=15;
-int Input,lastInput,kp;
-int32_t Output;
-
-int MotorSpeed;
+int MotorSpeed=0;
+int Input;
+byte leftMotorDir,rightMotorDir;
 
 //For troubleshooting delay()
 uint32_t pastTime=0;
@@ -35,8 +28,6 @@ void setup()
         for(int i=0;i<6;i++){
                 pinMode(m[i],OUTPUT);
         }
-        Wire.onRequest(send_Sensor_Data);
-
 }
 
 byte  I2Caddress()
@@ -51,54 +42,35 @@ byte  I2Caddress()
         return I2Caddr;
 }
 
-void send_Sensor_Data()
-{
-        byte buffer[2];
-        buffer[0]=MotorSpeed>>8;
-        buffer[1]=MotorSpeed&0xFF;
-        Wire.write(buffer,2);
-}
-
 void getSpeed()
 {
-        Wire.requestFrom(0x06,2);
-        if(Wire.available()==2){
+        Wire.requestFrom(0x06,4);
+        if(Wire.available()==4){
+                MotorSpeed=Wire.read()<<8|Wire.read();
                 Input=Wire.read()<<8|Wire.read();
-                #ifdef INPUT_Potentiometer
-                        if(Input>50){
-                                Input=lastInput;
-                        }
-                        lastInput=Input;
-                #endif
+		MotorSpeed=MotorSpeed>>3;
         }
         else {
                 Serial.println("Cannot connect to Master");
         }
-}
-
-void sonarPIDcompute()
-{
-        double error=Input-Setpoint;
-
-        Output=kp*error;
-        MotorSpeed=Output>>3;
-
-
-}
-
-void sonarTunings(int Kp)
-{
-        kp=Kp;
+	if(MotorSpeed<0){
+		leftMotorDir=1;
+		rightMotorDir=1;	
+	}
+	else{
+		leftMotorDir=0;
+		rightMotorDir=0;
+	}
 }
 
 void forward(int leftSpeed, int rightSpeed)
 {
         digitalWrite(leftMotorBreakPin,0);
         digitalWrite(rightMotorBreakPin,0);
-        digitalWrite(leftMotorDirPin,0);
-        digitalWrite(rightMotorDirPin,0);
-        analogWrite(leftMotorPWMPin,MotorSpeed);
-        analogWrite(rightMotorPWMPin,MotorSpeed);
+        digitalWrite(leftMotorDirPin,leftMotorDir);
+        digitalWrite(rightMotorDirPin,rightMotorDir);
+        analogWrite(leftMotorPWMPin,leftSpeed);
+        analogWrite(rightMotorPWMPin,rightSpeed);
 }
 
 void loop()
@@ -107,22 +79,17 @@ void loop()
         getSpeed();
         forward(MotorSpeed,MotorSpeed);
 
-        sonarPIDcompute();
-        sonarTunings(100);
-
-        troubleshoot();
+	troubleShoot();
 }
 
-void troubleshoot()
+void troubleShoot()
 {
-        uint32_t currentTime;
-        const int interval=500;
-        if((currentTime=millis()-pastTime)>=interval){
-                Serial.print(Input);
-                Serial.print("\t");
-                Serial.print(Output);
-                Serial.print("\t");
-                Serial.println(MotorSpeed);
-                pastTime=millis();
-        }
+	uint32_t currentTime;
+	const int interval=500;
+	if((currentTime=millis()-pastTime)>=interval){
+		Serial.print(Input);
+        	Serial.print("\t");
+        	Serial.println(MotorSpeed);
+		pastTime=millis();
+	}
 }

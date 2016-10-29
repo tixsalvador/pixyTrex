@@ -1,4 +1,3 @@
-//Remove PID computation from master
 //Added proportional algorithm in motorspeed value
 //Added troubleshoot
 //Added Wire library
@@ -19,13 +18,15 @@ Pixy pixy;
 
 byte I2Caddr;
 
-#define INPUT_Potentiometer //For troubleshooting Input using potentiometer
+int MotorSpeed;
 
-int Input,MotorSpeed;
+//PID calculation
+const int Setpoint=15;
+int Input,kp;
+int32_t Output;
 
 //For troubleshooting delay()
 uint32_t pastTime=0;
-uint32_t pastTime2=0;
 
 class ServoLoop
 {
@@ -140,53 +141,41 @@ void track_object()
 
 void sendMotorSpeed()
 {
-        byte buffer[2];
-        buffer[0]=Input>>8;
-        buffer[1]=Input&0xFF;
-        Wire.write(buffer,2);
+        byte buffer[4];
+        buffer[0]=MotorSpeed>>8;
+        buffer[1]=MotorSpeed&0xFF;
+        buffer[2]=Input>>8;
+        buffer[3]=Input&0xFF;
+        Wire.write(buffer,4);
 }
 
-void sonarInput()
+void sonarPidCompute()
 {
-        #ifdef INPUT_Potentiometer
-                Input=analogRead(A0);
-                Input=map(Input,0,1024,0,50);
-                Input=constrain(Input,0,50);
-        #else
-                Input=(leftSonar.pwDistance);
-        #endif
+//      Input=analogRead(A0);
+//      Input=map(Input,0,1024,0,50);
+//      Input=constrain(Input,0,50);
+        Input=(leftSonar.pwDistance);
+
+        double error=Input-Setpoint;
+        Output=kp*error;
+        MotorSpeed=Output;
 }
 
-void getTrexdata()
+void sonarSetTuning(double Kp)
 {
-        uint32_t currentTime;
-        const int interval=100;
-        if((currentTime=millis()-pastTime2)>=interval){
-                Wire.requestFrom(0x07,2);
-                if(Wire.available()==2){
-                        MotorSpeed=Wire.read()<<8|Wire.read();
-                }
-                else{
-                        Serial.println("Cannot connect to Slave");
-                }
-                pastTime2=millis();
-        }
-
+        kp=Kp;
 }
 
 void loop()
 {
-        #ifndef INPUT_Potentiometer
-                track_object();
-        #endif
-
-        getTrexdata();
+        track_object();
 
         leftSonar.readSonar(A2);
         rightSonar.readSonar(A1);
 
-        sonarInput();
-
+        sonarSetTuning(50);
+        sonarPidCompute();
+	
         troubleShoot();
 }
 
