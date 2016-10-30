@@ -1,3 +1,4 @@
+//Wire Sonar Data from Master
 //Remove motorspeed map and constrain.
 
 #include <EEPROM.h>
@@ -13,8 +14,8 @@
 
 byte I2Caddr;
 
-int MotorSpeed=0;
-int Input;
+int LMaxSensor;
+int RMaxSensor;
 byte leftMotorDir,rightMotorDir;
 
 //For troubleshooting delay()
@@ -46,21 +47,12 @@ void getSpeed()
 {
         Wire.requestFrom(0x06,4);
         if(Wire.available()==4){
-                MotorSpeed=Wire.read()<<8|Wire.read();
-                Input=Wire.read()<<8|Wire.read();
-		MotorSpeed=MotorSpeed>>3;
+                LMaxSensor=Wire.read()<<8|Wire.read();
+                RMaxSensor=Wire.read()<<8|Wire.read();
         }
         else {
                 Serial.println("Cannot connect to Master");
         }
-	if(MotorSpeed<0){
-		leftMotorDir=1;
-		rightMotorDir=1;	
-	}
-	else{
-		leftMotorDir=0;
-		rightMotorDir=0;
-	}
 }
 
 void forward(int leftSpeed, int rightSpeed)
@@ -77,7 +69,7 @@ void loop()
 {
         delay(100);
         getSpeed();
-        forward(MotorSpeed,MotorSpeed);
+//        forward(MotorSpeed,MotorSpeed);
 
 	troubleShoot();
 }
@@ -87,9 +79,9 @@ void troubleShoot()
 	uint32_t currentTime;
 	const int interval=500;
 	if((currentTime=millis()-pastTime)>=interval){
-		Serial.print(Input);
+		Serial.print(LMaxSensor);
         	Serial.print("\t");
-        	Serial.println(MotorSpeed);
+        	Serial.println(RMaxSensor);
 		pastTime=millis();
 	}
 }

@@ -1,4 +1,4 @@
-//Added proportional algorithm in motorspeed value
+//Remove Sonar PID Computation
 //Added troubleshoot
 //Added Wire library
 //Replace delay with millis() and micros()
@@ -17,13 +17,6 @@
 Pixy pixy;
 
 byte I2Caddr;
-
-int MotorSpeed;
-
-//PID calculation
-const int Setpoint=15;
-int Input,kp;
-int32_t Output;
 
 //For troubleshooting delay()
 uint32_t pastTime=0;
@@ -104,7 +97,7 @@ void setup()
 {
         Serial.begin(9600);
         Wire.begin(I2Caddress());
-        Wire.onRequest(sendMotorSpeed);
+        Wire.onRequest(sendToTrex);
         pixy.init();
 }
 
@@ -139,31 +132,14 @@ void track_object()
     }
 }
 
-void sendMotorSpeed()
+void sendToTrex()
 {
         byte buffer[4];
-        buffer[0]=MotorSpeed>>8;
-        buffer[1]=MotorSpeed&0xFF;
-        buffer[2]=Input>>8;
-        buffer[3]=Input&0xFF;
+        buffer[0]=leftSonar.pwDistance>>8;
+        buffer[1]=leftSonar.pwDistance&0xFF;
+        buffer[2]=rightSonar.pwDistance>>8;
+        buffer[3]=rightSonar.pwDistance&0xFF;
         Wire.write(buffer,4);
-}
-
-void sonarPidCompute()
-{
-//      Input=analogRead(A0);
-//      Input=map(Input,0,1024,0,50);
-//      Input=constrain(Input,0,50);
-        Input=(leftSonar.pwDistance);
-
-        double error=Input-Setpoint;
-        Output=kp*error;
-        MotorSpeed=Output;
-}
-
-void sonarSetTuning(double Kp)
-{
-        kp=Kp;
 }
 
 void loop()
@@ -173,9 +149,6 @@ void loop()
         leftSonar.readSonar(A2);
         rightSonar.readSonar(A1);
 
-        sonarSetTuning(50);
-        sonarPidCompute();
-	
         troubleShoot();
 }
 
@@ -197,9 +170,9 @@ void troubleShoot()
         //      Serial.print(leftSonar.pwDistance);
         //      Serial.print("\t");
         //      Serial.println(rightSonar.pwDistance);
-                Serial.print(Input);
-                Serial.print("\t");
-                Serial.println(MotorSpeed);
+        //        Serial.print(Input);
+        //        Serial.print("\t");
+        //        Serial.println(MotorSpeed);
                 pastTime=millis();
         }
 }
