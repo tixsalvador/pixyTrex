@@ -1,4 +1,4 @@
-//Wire Sonar Data from Master
+//Added maxsonar class/object
 //Remove motorspeed map and constrain.
 
 #include <EEPROM.h>
@@ -20,6 +20,48 @@ byte leftMotorDir,rightMotorDir;
 
 //For troubleshooting delay()
 uint32_t pastTime=0;
+
+class sonarPID
+{
+public:
+	sonarPID();
+	double kp,ki,kd,errSum,lastErr,stopDistance;
+	void maxSonarTunings(double Kp,double Ki,double Kd);
+	void maxSonarCompute();
+	int32_t MotorSpeed;
+	uint32_t previousTime;
+};
+
+sonarPID leftSonar,rightSonar;
+
+sonarPID::sonarPID()
+{
+	stopDistance=8;
+	previousTime=0;
+}
+
+void sonarPID::maxSonarTunings(double Kp,double Ki,double Kd)
+{
+        kp=Kp;
+        ki=Ki;
+        kd=Kd;
+}
+
+void sonarPID::maxSonarCompute()
+{
+        unsigned long now=millis();
+        double timeChange=(double)(now-previousTime);
+
+        double error=LMaxSensor-stopDistance;
+        errSum+=(error*timeChange);
+        double dErr=(error - lastErr)/timeChange;
+
+        int32_t Output=kp*error+ki*errSum+kd*dErr;
+        MotorSpeed=Output>>3;
+
+        lastErr=error;
+        previousTime=now;
+}
 
 void setup()
 {
@@ -43,7 +85,7 @@ byte  I2Caddress()
         return I2Caddr;
 }
 
-void getSpeed()
+void getMasterData()
 {
         Wire.requestFrom(0x06,4);
         if(Wire.available()==4){
@@ -68,8 +110,12 @@ void forward(int leftSpeed, int rightSpeed)
 void loop()
 {
         delay(100);
-        getSpeed();
-//        forward(MotorSpeed,MotorSpeed);
+        getMasterData();
+	leftSonar.maxSonarTunings(50,0,100);
+	leftSonar.maxSonarCompute();
+//	maxSonarCompute();
+//	maxSonarTunings(50,0,100);
+//      forward(MotorSpeed,MotorSpeed);
 
 	troubleShoot();
 }
@@ -80,8 +126,8 @@ void troubleShoot()
 	const int interval=500;
 	if((currentTime=millis()-pastTime)>=interval){
 		Serial.print(LMaxSensor);
-        	Serial.print("\t");
-        	Serial.println(RMaxSensor);
+		Serial.print("\t");
+        	Serial.println(leftSonar.MotorSpeed);
 		pastTime=millis();
 	}
 }
