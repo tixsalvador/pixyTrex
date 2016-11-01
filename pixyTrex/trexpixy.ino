@@ -27,7 +27,7 @@ public:
 	sonarPID();
 	double kp,ki,kd,errSum,lastErr,stopDistance;
 	void maxSonarTunings(double Kp,double Ki,double Kd);
-	void maxSonarCompute();
+	void maxSonarCompute(double sonarReading);
 	int32_t MotorSpeed;
 	uint32_t previousTime;
 };
@@ -47,12 +47,12 @@ void sonarPID::maxSonarTunings(double Kp,double Ki,double Kd)
         kd=Kd;
 }
 
-void sonarPID::maxSonarCompute()
+void sonarPID::maxSonarCompute(double sonarReading)
 {
         unsigned long now=millis();
         double timeChange=(double)(now-previousTime);
 
-        double error=LMaxSensor-stopDistance;
+        double error=sonarReading-stopDistance;
         errSum+=(error*timeChange);
         double dErr=(error - lastErr)/timeChange;
 
@@ -111,11 +111,11 @@ void loop()
 {
         delay(100);
         getMasterData();
+
 	leftSonar.maxSonarTunings(50,0,100);
-	leftSonar.maxSonarCompute();
-//	maxSonarCompute();
-//	maxSonarTunings(50,0,100);
-//      forward(MotorSpeed,MotorSpeed);
+	leftSonar.maxSonarCompute(LMaxSensor);
+
+//	forward(leftSonar.MotorSpeed,leftSonar.MotorSpeed);
 
 	troubleShoot();
 }
