@@ -25,7 +25,7 @@ class sonarPID
 {
 public:
 	sonarPID();
-	double kp,ki,kd,errSum,lastErr,stopDistance;
+	double kp,ki,kd,ITerm,lastsonarReading,stopDistance,derivative;
 	void maxSonarTunings(double Kp,double Ki,double Kd);
 	void maxSonarCompute(double sonarReading);
 	int32_t MotorSpeed;
@@ -50,16 +50,16 @@ void sonarPID::maxSonarTunings(double Kp,double Ki,double Kd)
 void sonarPID::maxSonarCompute(double sonarReading)
 {
         unsigned long now=millis();
-        double timeChange=(double)(now-previousTime);
 
-        double error=sonarReading-stopDistance;
-        errSum+=(error*timeChange);
-        double dErr=(error - lastErr)/timeChange;
+        double error=stopDistance-sonarReading;
+        ITerm+=(ki*error);;
+        double dsonarReading=(sonarReading - lastsonarReading);
 
-        int32_t Output=kp*error+ki*errSum+kd*dErr;
+	derivative=kd*dsonarReading;
+        int32_t Output=kp*error+ITerm-kd*dsonarReading;
         MotorSpeed=Output>>3;
 
-        lastErr=error;
+        lastsonarReading=sonarReading;
         previousTime=now;
 }
 
@@ -123,9 +123,13 @@ void loop()
 void troubleShoot()
 {
 	uint32_t currentTime;
-	const int interval=500;
+	const int interval=1000;
 	if((currentTime=millis()-pastTime)>=interval){
 		Serial.print(LMaxSensor);
+		Serial.print("\t");
+		Serial.print(leftSonar.ITerm);
+		Serial.print("\t");
+		Serial.print(leftSonar.derivative);
 		Serial.print("\t");
         	Serial.println(leftSonar.MotorSpeed);
 		pastTime=millis();
