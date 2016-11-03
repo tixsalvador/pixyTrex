@@ -25,11 +25,11 @@ class sonarPID
 {
 public:
 	sonarPID();
-	double kp,ki,kd,ITerm,lastsonarReading,stopDistance,derivative;
+	double kp,ki,kd,ITerm,lastsonarReading,stopDistance,outMin,outMax,derivative;
 	void maxSonarTunings(double Kp,double Ki,double Kd);
+	void setLimits(double Min,double Max);
 	void maxSonarCompute(double sonarReading);
-	int32_t MotorSpeed;
-	uint32_t previousTime;
+	int32_t MotorSpeed,Output;
 };
 
 sonarPID leftSonar,rightSonar;
@@ -37,7 +37,6 @@ sonarPID leftSonar,rightSonar;
 sonarPID::sonarPID()
 {
 	stopDistance=8;
-	previousTime=0;
 }
 
 void sonarPID::maxSonarTunings(double Kp,double Ki,double Kd)
@@ -47,20 +46,48 @@ void sonarPID::maxSonarTunings(double Kp,double Ki,double Kd)
         kd=Kd;
 }
 
+void sonarPID::setLimits(double Min,double Max)
+{
+	if(Min>Max)return;
+	outMin=Min;
+	outMax=Max;
+	if(Output>outMax){
+		Output=outMax;
+	}
+	else if(Output<outMin){
+		Output=outMin;
+	}
+	if(ITerm>outMax){
+		ITerm=outMax;
+	}
+	else if(ITerm<outMin){
+		ITerm=outMin;
+	}
+}
+
 void sonarPID::maxSonarCompute(double sonarReading)
 {
-        unsigned long now=millis();
-
-        double error=stopDistance-sonarReading;
-        ITerm+=(ki*error);;
-        double dsonarReading=(sonarReading - lastsonarReading);
+        double error=sonarReading-stopDistance;
+        ITerm+=(ki*error);
+	if(ITerm>outMax){
+		ITerm=outMax;
+	}
+	else if(ITerm<outMin){
+		ITerm=outMin;
+	}
+        double dsonarReading=(sonarReading-lastsonarReading);
 
 	derivative=kd*dsonarReading;
-        int32_t Output=kp*error+ITerm-kd*dsonarReading;
-        MotorSpeed=Output>>3;
+        Output=kp*error+ITerm-kd*dsonarReading;
+	MotorSpeed=Output>>3;
+	if(MotorSpeed>outMax){
+		MotorSpeed=outMax;
+	}
+	else if(Output<outMin){
+		Output=outMin;
+	}
 
         lastsonarReading=sonarReading;
-        previousTime=now;
 }
 
 void setup()
@@ -93,8 +120,22 @@ void getMasterData()
                 RMaxSensor=Wire.read()<<8|Wire.read();
         }
         else {
+		digitalWrite(leftMotorBreakPin,1);
+        	digitalWrite(rightMotorBreakPin,1);	
                 Serial.println("Cannot connect to Master");
         }
+}
+
+void direction()
+{
+	if(leftSonar.MotorSpeed>0){
+		leftMotorDir=0;
+		rightMotorDir=0;
+	}
+	else{
+		leftMotorDir=1;
+		rightMotorDir=1;
+	}
 }
 
 void forward(int leftSpeed, int rightSpeed)
@@ -111,11 +152,13 @@ void loop()
 {
         delay(100);
         getMasterData();
-
+	
+	leftSonar.setLimits(-50,232);
 	leftSonar.maxSonarTunings(50,0,100);
 	leftSonar.maxSonarCompute(LMaxSensor);
 
-//	forward(leftSonar.MotorSpeed,leftSonar.MotorSpeed);
+	direction();
+	forward(leftSonar.MotorSpeed,leftSonar.MotorSpeed);
 
 	troubleShoot();
 }
