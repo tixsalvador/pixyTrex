@@ -18,6 +18,10 @@ Pixy pixy;
 
 byte I2Caddr;
 
+int Pgain=50;
+int Igain=0;
+int Dgain=100;
+
 //For troubleshooting delay()
 uint32_t pastTime=0;
 
@@ -134,12 +138,18 @@ void track_object()
 
 void sendToTrex()
 {
-        byte buffer[4];
+        byte buffer[10];
         buffer[0]=leftSonar.pwDistance>>8;
         buffer[1]=leftSonar.pwDistance&0xFF;
         buffer[2]=rightSonar.pwDistance>>8;
         buffer[3]=rightSonar.pwDistance&0xFF;
-        Wire.write(buffer,4);
+	buffer[4]=Pgain>>8;
+        buffer[5]=Pgain&0xFF;
+        buffer[6]=Igain>>8;
+        buffer[7]=Igain&0xFF;
+        buffer[8]=Dgain>>8;
+        buffer[9]=Dgain&0xFF;
+        Wire.write(buffer,10);
 }
 
 void loop()

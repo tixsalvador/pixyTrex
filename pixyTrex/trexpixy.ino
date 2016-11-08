@@ -14,8 +14,10 @@
 
 byte I2Caddr;
 
-int LMaxSensor;
-int RMaxSensor;
+int LMaxSensor,RMaxSensor;
+float Pgain,Igain,Dgain;
+const int minSpeed=-50;
+const int maxSpeed=232;
 byte leftMotorDir,rightMotorDir;
 
 //For troubleshooting delay()
@@ -51,11 +53,11 @@ void sonarPID::setLimits(double Min,double Max)
 	if(Min>Max)return;
 	outMin=Min;
 	outMax=Max;
-	if(Output>outMax){
-		Output=outMax;
+	if(MotorSpeed>outMax){
+		MotorSpeed=outMax;
 	}
-	else if(Output<outMin){
-		Output=outMin;
+	else if(MotorSpeed<outMin){
+		MotorSpeed=outMin;
 	}
 	if(ITerm>outMax){
 		ITerm=outMax;
@@ -69,22 +71,18 @@ void sonarPID::maxSonarCompute(double sonarReading)
 {
         double error=sonarReading-stopDistance;
         ITerm+=(ki*error);
-	if(ITerm>outMax){
-		ITerm=outMax;
-	}
-	else if(ITerm<outMin){
-		ITerm=outMin;
-	}
         double dsonarReading=(sonarReading-lastsonarReading);
 
 	derivative=kd*dsonarReading;
         Output=kp*error+ITerm-kd*dsonarReading;
 	MotorSpeed=Output>>3;
 	if(MotorSpeed>outMax){
+		ITerm-=MotorSpeed-outMax;
 		MotorSpeed=outMax;
 	}
-	else if(Output<outMin){
-		Output=outMin;
+	else if(MotorSpeed<outMin){
+		ITerm+=outMin-MotorSpeed;
+		MotorSpeed=outMin;
 	}
 
         lastsonarReading=sonarReading;
@@ -114,10 +112,13 @@ byte  I2Caddress()
 
 void getMasterData()
 {
-        Wire.requestFrom(0x06,4);
-        if(Wire.available()==4){
+        Wire.requestFrom(0x06,10);
+        if(Wire.available()==10){
                 LMaxSensor=Wire.read()<<8|Wire.read();
                 RMaxSensor=Wire.read()<<8|Wire.read();
+		Pgain=Wire.read()<<8|Wire.read();
+		Igain=Wire.read()<<8|Wire.read();
+		Dgain=Wire.read()<<8|Wire.read();
         }
         else {
 		digitalWrite(leftMotorBreakPin,1);
@@ -153,8 +154,8 @@ void loop()
         delay(100);
         getMasterData();
 	
-	leftSonar.setLimits(-50,232);
-	leftSonar.maxSonarTunings(50,0,100);
+	leftSonar.setLimits(minSpeed,maxSpeed);
+	leftSonar.maxSonarTunings(Pgain,Igain,Dgain);
 	leftSonar.maxSonarCompute(LMaxSensor);
 
 	direction();
