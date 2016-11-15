@@ -27,7 +27,7 @@ class sonarPID
 {
 public:
 	sonarPID();
-	double kp,ki,kd,ITerm,lastsonarReading,stopDistance,outMin,outMax,derivative;
+	double kp,ki,kd,ITerm,lastsonarReading,stopDistance,outMin,outMax,proportional,derivative;
 	void maxSonarTunings(double Kp,double Ki,double Kd);
 	void setLimits(double Min,double Max);
 	void maxSonarCompute(double sonarReading);
@@ -38,7 +38,7 @@ sonarPID leftSonar,rightSonar;
 
 sonarPID::sonarPID()
 {
-	stopDistance=8;
+	stopDistance=12;
 }
 
 void sonarPID::maxSonarTunings(double Kp,double Ki,double Kd)
@@ -71,17 +71,22 @@ void sonarPID::maxSonarCompute(double sonarReading)
 {
         double error=sonarReading-stopDistance;
         ITerm+=(ki*error);
+	if(ITerm>outMax){
+		ITerm=outMax;
+	}
+	else if(ITerm<outMin){
+		ITerm=outMin;
+	}
         double dsonarReading=(sonarReading-lastsonarReading);
 
+	proportional=kp*error;
 	derivative=kd*dsonarReading;
         Output=kp*error+ITerm-kd*dsonarReading;
 	MotorSpeed=Output>>3;
 	if(MotorSpeed>outMax){
-		ITerm-=MotorSpeed-outMax;
 		MotorSpeed=outMax;
 	}
 	else if(MotorSpeed<outMin){
-		ITerm+=outMin-MotorSpeed;
 		MotorSpeed=outMin;
 	}
 
@@ -129,7 +134,7 @@ void getMasterData()
 
 void direction()
 {
-	if(leftSonar.MotorSpeed>0){
+	if(leftSonar.MotorSpeed>0||rightSonar.MotorSpeed>0){
 		leftMotorDir=0;
 		rightMotorDir=0;
 	}
@@ -157,9 +162,13 @@ void loop()
 	leftSonar.setLimits(minSpeed,maxSpeed);
 	leftSonar.maxSonarTunings(Pgain,Igain,Dgain);
 	leftSonar.maxSonarCompute(LMaxSensor);
+	
+	rightSonar.setLimits(minSpeed,maxSpeed);
+	rightSonar.maxSonarTunings(Pgain,Igain,Dgain);
+	rightSonar.maxSonarCompute(RMaxSensor);
 
 	direction();
-	forward(leftSonar.MotorSpeed,leftSonar.MotorSpeed);
+	forward(leftSonar.MotorSpeed,rightSonar.MotorSpeed);
 
 	troubleShoot();
 }
@@ -170,12 +179,20 @@ void troubleShoot()
 	const int interval=1000;
 	if((currentTime=millis()-pastTime)>=interval){
 		Serial.print(LMaxSensor);
-		Serial.print("\t");
-		Serial.print(leftSonar.ITerm);
-		Serial.print("\t");
-		Serial.print(leftSonar.derivative);
-		Serial.print("\t");
-        	Serial.println(leftSonar.MotorSpeed);
+                Serial.print("\t");
+                Serial.print(Pgain);
+                Serial.print("\t");
+                Serial.print(Igain);
+                Serial.print("\t");
+                Serial.print(Dgain);
+                Serial.print("\t");
+                Serial.print(leftSonar.proportional);
+                Serial.print("\t");
+                Serial.print(leftSonar.ITerm);
+                Serial.print("\t");
+                Serial.print(leftSonar.derivative);
+                Serial.print("\t");
+                Serial.println(leftSonar.MotorSpeed);
 		pastTime=millis();
 	}
 }
