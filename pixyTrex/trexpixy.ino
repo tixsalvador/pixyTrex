@@ -134,13 +134,18 @@ void getMasterData()
 
 void direction()
 {
-	if(leftSonar.MotorSpeed>0||rightSonar.MotorSpeed>0){
+	if(leftSonar.MotorSpeed>0){
 		leftMotorDir=0;
-		rightMotorDir=0;
 	}
 	else{
 		leftMotorDir=1;
-		rightMotorDir=1;
+	}
+	
+	if(rightSonar.MotorSpeed>0){
+		rightMotorDir=0;
+	}
+	else{
+		rightMotorDir=1;	
 	}
 }
 
@@ -178,6 +183,10 @@ void troubleShoot()
 	uint32_t currentTime;
 	const int interval=1000;
 	if((currentTime=millis()-pastTime)>=interval){
+		Serial.print(leftSonar.MotorSpeed);
+		Serial.print("\t");
+		Serial.println(rightSonar.MotorSpeed);
+		/*
 		Serial.print(LMaxSensor);
                 Serial.print("\t");
                 Serial.print(Pgain);
@@ -193,6 +202,7 @@ void troubleShoot()
                 Serial.print(leftSonar.derivative);
                 Serial.print("\t");
                 Serial.println(leftSonar.MotorSpeed);
+		*/
 		pastTime=millis();
 	}
 }
