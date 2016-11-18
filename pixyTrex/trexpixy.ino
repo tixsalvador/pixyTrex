@@ -1,3 +1,4 @@
+//Added PanError
 //Added maxsonar class/object
 //Remove motorspeed map and constrain.
 
@@ -19,6 +20,8 @@ float Pgain,Igain,Dgain;
 const int minSpeed=-50;
 const int maxSpeed=232;
 byte leftMotorDir,rightMotorDir;
+
+int panError;
 
 //For troubleshooting delay()
 uint32_t pastTime=0;
@@ -117,13 +120,14 @@ byte  I2Caddress()
 
 void getMasterData()
 {
-        Wire.requestFrom(0x06,10);
-        if(Wire.available()==10){
+        Wire.requestFrom(0x06,12);
+        if(Wire.available()==12){
                 LMaxSensor=Wire.read()<<8|Wire.read();
                 RMaxSensor=Wire.read()<<8|Wire.read();
                 Pgain=Wire.read()<<8|Wire.read();
                 Igain=Wire.read()<<8|Wire.read();
                 Dgain=Wire.read()<<8|Wire.read();
+		panError=Wire.read()<<8|Wire.read();
         }
         else {
                 digitalWrite(leftMotorBreakPin,1);
@@ -177,9 +181,7 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=1000;
         if((currentTime=millis()-pastTime)>=interval){
-                Serial.print(leftSonar.MotorSpeed);
-                Serial.print("\t");
-                Serial.println(rightSonar.MotorSpeed);
+                Serial.println(panError);
                 /*
                 Serial.print(LMaxSensor);
                 Serial.print("\t");

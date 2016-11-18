@@ -1,3 +1,4 @@
+//Send panError to trex
 //Remove Sonar PID Computation
 //Added troubleshoot
 //Added Wire library
@@ -17,6 +18,9 @@
 Pixy pixy;
 
 byte I2Caddr;
+
+
+int32_t panError, tiltError;
 
 int Pgain=50;
 int Igain=0;
@@ -120,7 +124,7 @@ byte  I2Caddress()
 void track_object()
 {
     uint16_t blocks;
-    int32_t panError, tiltError;
+
 
     blocks=pixy.getBlocks();
 
@@ -138,7 +142,7 @@ void track_object()
 
 void sendToTrex()
 {
-        byte buffer[10];
+        byte buffer[12];
         buffer[0]=leftSonar.pwDistance>>8;
         buffer[1]=leftSonar.pwDistance&0xFF;
         buffer[2]=rightSonar.pwDistance>>8;
@@ -149,7 +153,9 @@ void sendToTrex()
         buffer[7]=Igain&0xFF;
         buffer[8]=Dgain>>8;
         buffer[9]=Dgain&0xFF;
-        Wire.write(buffer,10);
+	buffer[10]=panError>>8;
+	buffer[11]=panError&0xFF;
+        Wire.write(buffer,12);
 }
 
 void loop()
@@ -183,6 +189,7 @@ void troubleShoot()
         //        Serial.print(Input);
         //        Serial.print("\t");
         //        Serial.println(MotorSpeed);
+		Serial.println(panError);
                 pastTime=millis();
         }
 }
