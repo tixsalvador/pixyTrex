@@ -5,6 +5,8 @@
 #include <EEPROM.h>
 #include <Wire.h>
 
+//#define USE_MAXSONAR
+
 #define leftMotorDirPin 2
 #define leftMotorPWMPin 3
 #define leftMotorBreakPin 4
@@ -163,17 +165,23 @@ void loop()
         delay(100);
         getMasterData();
 
-        leftSonar.setLimits(minSpeed,maxSpeed);
-        leftSonar.maxSonarTunings(Pgain,Igain,Dgain);
-        leftSonar.maxSonarCompute(LMaxSensor);
-
-        rightSonar.setLimits(minSpeed,maxSpeed);
-        rightSonar.maxSonarTunings(Pgain,Igain,Dgain);
-        rightSonar.maxSonarCompute(RMaxSensor);
+	#ifdef USE_MAXSONAR
+        	leftSonar.setLimits(minSpeed,maxSpeed);
+        	leftSonar.maxSonarTunings(Pgain,Igain,Dgain);
+        	leftSonar.maxSonarCompute(LMaxSensor);
+        	rightSonar.setLimits(minSpeed,maxSpeed);
+        	rightSonar.maxSonarTunings(Pgain,Igain,Dgain);
+        	rightSonar.maxSonarCompute(RMaxSensor);
+	#endif
+	
+	#ifndef USE_MAXSONAR
+		Serial.println("Max Sonar not use");
+	#endif
 
         forward(leftSonar.MotorSpeed,rightSonar.MotorSpeed);
 
-        troubleShoot();
+	
+	troubleShoot();
 }
 
 void troubleShoot()
