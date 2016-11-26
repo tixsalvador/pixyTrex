@@ -21,12 +21,13 @@ byte I2Caddr;
 
 int followError;
 
-int Pgain=50;
+int Pgain;
 int Igain=0;
 int Dgain=100;
 
 //For troubleshooting delay()
 uint32_t pastTime=0;
+uint32_t pastTime2=0;
 
 class ServoLoop
 {
@@ -157,13 +158,24 @@ void sendToTrex()
         Wire.write(buffer,12);
 }
 
+void gains_calibration(int recieverPin)
+{
+	uint32_t currentTime;
+        const int interval=1000;
+        if((currentTime=millis()-pastTime2)>=interval){
+                Pgain=pulseIn(recieverPin,HIGH);
+                pastTime2=millis();
+        }
+
+}
+
 void loop()
 {
         track_object();
 
         leftSonar.readSonar(A2);
         rightSonar.readSonar(A1);
-	
+
 	followError=PIXY_RCS_CENTER_POS-panLoop.m_pos;
 
         troubleShoot();
@@ -174,6 +186,7 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=500;
         if((currentTime=millis()-pastTime)>=interval){
+	/*
         //      Serial.print(leftSonar.pwDistance);
         //      Serial.print(potentiometer);
         //      Serial.print("\t");
@@ -193,6 +206,8 @@ void troubleShoot()
 		Serial.print(panLoop.m_pos);
 		Serial.print("\t");
 		Serial.println(followError);
+	*/
+		Serial.println(Pgain);
                 pastTime=millis();
         }
 }
