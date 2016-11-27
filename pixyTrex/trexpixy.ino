@@ -1,3 +1,4 @@
+//Added size
 //Added PanError
 //Added maxsonar class/object
 //Remove motorspeed map and constrain.
@@ -24,8 +25,16 @@ const int maxSpeed=232;
 byte leftMotorDir,rightMotorDir;
 
 //Pixy PID computation
-int followError,MotorSpeed;
+int32_t followError,MotorSpeed;
 float proportional;
+
+union siz2bytes
+{
+	float sizf;
+	char sizb[sizeof(float)];
+};
+
+int32_t size;
 
 //For troubleshooting delay()
 uint32_t pastTime=0;
@@ -124,14 +133,20 @@ byte  I2Caddress()
 
 void getMasterData()
 {
-        Wire.requestFrom(0x06,12);
-        if(Wire.available()==12){
+	siz2bytes si2b;
+        Wire.requestFrom(0x06,16);
+        if(Wire.available()==16){
                 LMaxSensor=Wire.read()<<8|Wire.read();
                 RMaxSensor=Wire.read()<<8|Wire.read();
                 Pgain=Wire.read()<<8|Wire.read();
                 Igain=Wire.read()<<8|Wire.read();
                 Dgain=Wire.read()<<8|Wire.read();
 		followError=Wire.read()<<8|Wire.read();
+		si2b.sizb[0]=Wire.read();
+		si2b.sizb[1]=Wire.read();
+		si2b.sizb[2]=Wire.read();
+		si2b.sizb[3]=Wire.read();
+		size=si2b.sizf;
         }
         else {
                 digitalWrite(leftMotorBreakPin,1);
@@ -190,8 +205,14 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=1000;
         if((currentTime=millis()-pastTime)>=interval){
-                Serial.println(followError);
-	/*	
+		Serial.println(size);
+	/*
+                Serial.print(followError);
+		Serial.print("\t");
+		Serial.print(proportional);
+		Serial.print("\t");
+		Serial.println(MotorSpeed);
+		
 		Serial.print("\t");
 		Serial.print(Pgain);
 		Serial.print("\t");

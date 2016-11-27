@@ -1,3 +1,4 @@
+//Added size
 //Changed send data from panError to followErrror;
 //Remove Sonar PID Computation
 //Added troubleshoot
@@ -20,8 +21,9 @@ Pixy pixy;
 byte I2Caddr;
 
 int followError;
+int32_t size=999999;
 
-int Pgain;
+int Pgain=100;
 int Igain=0;
 int Dgain=100;
 
@@ -142,7 +144,7 @@ void track_object()
 
 void sendToTrex()
 {
-        byte buffer[12];
+        byte buffer[16];
         buffer[0]=leftSonar.pwDistance>>8;
         buffer[1]=leftSonar.pwDistance&0xFF;
         buffer[2]=rightSonar.pwDistance>>8;
@@ -155,7 +157,20 @@ void sendToTrex()
         buffer[9]=Dgain&0xFF;
 	buffer[10]=followError>>8;
 	buffer[11]=followError&0xFF;
-        Wire.write(buffer,12);
+
+	union siz2bytes
+	{
+		float sizf;
+		byte sizb[sizeof(float)];
+	};
+	siz2bytes si2b;
+	si2b.sizf=size;
+	buffer[12]=si2b.sizb[0];
+	buffer[13]=si2b.sizb[1];
+	buffer[14]=si2b.sizb[2];
+	buffer[15]=si2b.sizb[3];
+
+        Wire.write(buffer,sizeof(buffer));
 }
 
 void gains_calibration(int recieverPin)
