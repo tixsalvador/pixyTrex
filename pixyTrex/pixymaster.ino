@@ -21,7 +21,7 @@ Pixy pixy;
 byte I2Caddr;
 
 int followError;
-int32_t size=999999;
+int32_t size;
 
 int Pgain=100;
 int Igain=0;
@@ -134,11 +134,15 @@ void track_object()
     {
         panError=X_CENTER-pixy.blocks[0].x;
         tiltError=pixy.blocks[0].y-Y_CENTER;
+	size=pixy.blocks[0].width*pixy.blocks[0].height;
 
         panLoop.update(panError);
         tiltLoop.update(tiltError);
 
         pixy.setServos(panLoop.m_pos,tiltLoop.m_pos);
+
+	followError=PIXY_RCS_CENTER_POS-panLoop.m_pos;
+	
     }
 }
 
@@ -191,8 +195,6 @@ void loop()
         leftSonar.readSonar(A2);
         rightSonar.readSonar(A1);
 
-	followError=PIXY_RCS_CENTER_POS-panLoop.m_pos;
-
         troubleShoot();
 }
 
@@ -221,8 +223,8 @@ void troubleShoot()
 		Serial.print(panLoop.m_pos);
 		Serial.print("\t");
 		Serial.println(followError);
-	*/
 		Serial.println(Pgain);
+	*/
                 pastTime=millis();
         }
 }

@@ -205,13 +205,13 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=1000;
         if((currentTime=millis()-pastTime)>=interval){
-		Serial.println(size);
-	/*
+	
                 Serial.print(followError);
 		Serial.print("\t");
 		Serial.print(proportional);
 		Serial.print("\t");
 		Serial.println(MotorSpeed);
+	/*
 		
 		Serial.print("\t");
 		Serial.print(Pgain);
