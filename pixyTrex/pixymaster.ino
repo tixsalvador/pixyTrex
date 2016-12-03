@@ -225,6 +225,7 @@ void troubleShoot()
 		Serial.println(followError);
 		Serial.println(Pgain);
 	*/
+		Serial.println(size);
                 pastTime=millis();
         }
 }

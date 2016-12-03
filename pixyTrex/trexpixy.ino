@@ -146,11 +146,9 @@ void getMasterData()
 		si2b.sizb[1]=Wire.read();
 		si2b.sizb[2]=Wire.read();
 		si2b.sizb[3]=Wire.read();
-		size=si2b.sizf;
+		size=(long)si2b.sizf;
         }
         else {
-                digitalWrite(leftMotorBreakPin,1);
-                digitalWrite(rightMotorBreakPin,1);
                 Serial.println("Cannot connect to Master");
         }
 }
@@ -205,13 +203,14 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=1000;
         if((currentTime=millis()-pastTime)>=interval){
-	
-                Serial.print(followError);
+		Serial.println(size);	
+                /*
+		Serial.print(followError);
 		Serial.print("\t");
 		Serial.print(proportional);
 		Serial.print("\t");
 		Serial.println(MotorSpeed);
-	/*
+	
 		
 		Serial.print("\t");
 		Serial.print(Pgain);
