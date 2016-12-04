@@ -155,18 +155,6 @@ void getMasterData()
 
 void forward(int leftSpeed, int rightSpeed)
 {
-        if(leftSpeed>0){
-                leftMotorDir=0;
-        }
-        else{
-                leftMotorDir=1;
-        }
-        if(rightSpeed>0){
-                rightMotorDir=0;
-        }
-        else{
-                rightMotorDir=1;
-        }
         digitalWrite(leftMotorBreakPin,0);
         digitalWrite(rightMotorBreakPin,0);
         digitalWrite(leftMotorDirPin,leftMotorDir);
