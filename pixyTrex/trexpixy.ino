@@ -25,7 +25,8 @@ const int maxSpeed=232;
 byte leftMotorDir,rightMotorDir;
 
 //Pixy PID computation
-int32_t followError,MotorSpeed;
+int32_t followError;
+int32_t MotorSpeed=255;
 float proportional;
 
 union siz2bytes
@@ -179,8 +180,9 @@ void loop()
 	#endif
 	
 	#ifndef USE_MAXSONAR
-		proportional=Pgain*followError;
-		MotorSpeed=Pgain*followError;
+		size+=size;
+		size-=size>>3;
+		MotorSpeed=constrain(255-(size/256),-100,255);
 	#endif
 
 	troubleShoot();
@@ -191,7 +193,9 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=1000;
         if((currentTime=millis()-pastTime)>=interval){
-		Serial.println(size);	
+		Serial.print(size);
+		Serial.print("\t");
+                Serial.println(MotorSpeed);	
                 /*
 		Serial.print(followError);
 		Serial.print("\t");
