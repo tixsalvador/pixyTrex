@@ -19,8 +19,7 @@
 byte I2Caddr;
 
 int LMaxSensor,RMaxSensor;
-int Pgain;
-float Igain,Dgain;
+float Pgain,Igain,Dgain;
 const int minSpeed=-50;
 const int maxSpeed=232;
 
@@ -181,7 +180,6 @@ void loop()
 		size+=size;
 		size-=size>>3;
 		//MotorSpeed=constrain(255-(size/256),-100,255);
-		motors(Pgain,Pgain);
 	#endif
 
 	troubleShoot();
