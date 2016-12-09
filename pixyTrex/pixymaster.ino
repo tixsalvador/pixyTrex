@@ -23,7 +23,7 @@ byte I2Caddr;
 int followError;
 int32_t size;
 
-int Pgain=100;
+int Pgain=50;
 int Igain=0;
 int Dgain=100;
 
@@ -183,6 +183,8 @@ void gains_calibration(int recieverPin)
         const int interval=1000;
         if((currentTime=millis()-pastTime2)>=interval){
                 Pgain=pulseIn(recieverPin,HIGH);
+		Pgain=map(Pgain,984,1966,-255,255);
+		Pgain=constrain(Pgain,-255,255);
                 pastTime2=millis();
         }
 
@@ -194,6 +196,8 @@ void loop()
 
         leftSonar.readSonar(A2);
         rightSonar.readSonar(A1);
+	
+//	gains_calibration(A3);
 
         troubleShoot();
 }
@@ -223,9 +227,8 @@ void troubleShoot()
 		Serial.print(panLoop.m_pos);
 		Serial.print("\t");
 		Serial.println(followError);
-		Serial.println(Pgain);
 	*/
-		Serial.println(size);
+		Serial.println(Pgain);
                 pastTime=millis();
         }
 }

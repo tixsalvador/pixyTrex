@@ -19,15 +19,13 @@
 byte I2Caddr;
 
 int LMaxSensor,RMaxSensor;
-float Pgain,Igain,Dgain;
+int Pgain;
+float Igain,Dgain;
 const int minSpeed=-50;
 const int maxSpeed=232;
-byte leftMotorDir,rightMotorDir;
 
 //Pixy PID computation
 int32_t followError;
-int32_t MotorSpeed=255;
-float proportional;
 
 union siz2bytes
 {
@@ -154,14 +152,14 @@ void getMasterData()
         }
 }
 
-void forward(int leftSpeed, int rightSpeed)
+void motors(int leftSpeed, int rightSpeed)
 {
         digitalWrite(leftMotorBreakPin,0);
         digitalWrite(rightMotorBreakPin,0);
-        digitalWrite(leftMotorDirPin,leftMotorDir);
-        digitalWrite(rightMotorDirPin,rightMotorDir);
-        analogWrite(leftMotorPWMPin,leftSpeed);
-        analogWrite(rightMotorPWMPin,rightSpeed);
+        digitalWrite(leftMotorDirPin,leftSpeed<0);
+        digitalWrite(rightMotorDirPin,rightSpeed<0);
+        analogWrite(leftMotorPWMPin,abs(leftSpeed));
+        analogWrite(rightMotorPWMPin,abs(rightSpeed));
 }
 
 void loop()
@@ -176,13 +174,14 @@ void loop()
         	rightSonar.setLimits(minSpeed,maxSpeed);
         	rightSonar.maxSonarTunings(Pgain,Igain,Dgain);
         	rightSonar.maxSonarCompute(RMaxSensor);
-        	forward(leftSonar.MotorSpeed,rightSonar.MotorSpeed);
+        	motors(leftSonar.MotorSpeed,rightSonar.MotorSpeed);
 	#endif
 	
 	#ifndef USE_MAXSONAR
 		size+=size;
 		size-=size>>3;
-		MotorSpeed=constrain(255-(size/256),-100,255);
+		//MotorSpeed=constrain(255-(size/256),-100,255);
+		motors(Pgain,Pgain);
 	#endif
 
 	troubleShoot();
@@ -193,9 +192,8 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=1000;
         if((currentTime=millis()-pastTime)>=interval){
-		Serial.print(size);
-		Serial.print("\t");
-                Serial.println(MotorSpeed);	
+		Serial.println(Pgain);
+                //Serial.println(MotorSpeed);	
                 /*
 		Serial.print(followError);
 		Serial.print("\t");
