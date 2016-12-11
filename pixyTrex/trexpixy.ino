@@ -26,6 +26,9 @@ const int maxSpeed=232;
 //Pixy PID computation
 int32_t followError;
 
+int32_t lmspeed=0;
+int32_t rmspeed=0;
+
 union siz2bytes
 {
 	float sizf;
@@ -179,7 +182,9 @@ void loop()
 	#ifndef USE_MAXSONAR
 		size+=size;
 		size-=size>>3;
-		//MotorSpeed=constrain(255-(size/256),-100,255);
+		lmspeed=constrain(255-(size/70),-200,255);
+		rmspeed=constrain(255-(size/70),-200,255);
+		motors(lmspeed,rmspeed);
 	#endif
 
 	troubleShoot();
@@ -190,39 +195,7 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=1000;
         if((currentTime=millis()-pastTime)>=interval){
-		Serial.println(Pgain);
-                //Serial.println(MotorSpeed);	
-                /*
-		Serial.print(followError);
-		Serial.print("\t");
-		Serial.print(proportional);
-		Serial.print("\t");
-		Serial.println(MotorSpeed);
-	
-		
-		Serial.print("\t");
-		Serial.print(Pgain);
-		Serial.print("\t");
-		Serial.print(proportional);
-		Serial.print("\t");
-		Serial.println(MotorSpeed);
-                
-                Serial.print(LMaxSensor);
-                Serial.print("\t");
-                Serial.print(Pgain);
-                Serial.print("\t");
-                Serial.print(Igain);
-                Serial.print("\t");
-                Serial.print(Dgain);
-                Serial.print("\t");
-                Serial.print(leftSonar.proportional);
-                Serial.print("\t");
-                Serial.print(leftSonar.ITerm);
-                Serial.print("\t");
-                Serial.print(leftSonar.derivative);
-                Serial.print("\t");
-                Serial.println(leftSonar.MotorSpeed);
-                */
+		Serial.println(lmspeed);
                 pastTime=millis();
         }
 }
