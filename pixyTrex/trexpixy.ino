@@ -28,6 +28,8 @@ int32_t followError;
 
 int32_t lmspeed=0;
 int32_t rmspeed=0;
+const int speedMin=-100;
+const int speedMax=100;
 
 union siz2bytes
 {
@@ -182,8 +184,8 @@ void loop()
 	#ifndef USE_MAXSONAR
 		size+=size;
 		size-=size>>3;
-		lmspeed=constrain(255-(size/70),-200,255);
-		rmspeed=constrain(255-(size/70),-200,255);
+		lmspeed=constrain(speedMax-(size/70),speedMin,speedMax);
+		rmspeed=constrain(speedMax-(size/70),speedMin,speedMax);
 		motors(lmspeed,rmspeed);
 	#endif
 
@@ -195,7 +197,9 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=1000;
         if((currentTime=millis()-pastTime)>=interval){
-		Serial.println(lmspeed);
+		Serial.print(lmspeed);
+		Serial.print("\t");
+		Serial.println(size);
                 pastTime=millis();
         }
 }
