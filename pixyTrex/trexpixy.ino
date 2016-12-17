@@ -182,11 +182,11 @@ void loop()
 	#endif
 	
 	#ifndef USE_MAXSONAR
-		size+=size;
-		size-=size>>3;
+//		size+=size;
+//		size-=size>>3;
 		lmspeed=constrain(speedMax-(size/70),speedMin,speedMax);
 		rmspeed=constrain(speedMax-(size/70),speedMin,speedMax);
-		motors(lmspeed,rmspeed);
+//		motors(lmspeed,rmspeed);
 	#endif
 
 	troubleShoot();

@@ -135,6 +135,8 @@ void track_object()
         panError=X_CENTER-pixy.blocks[0].x;
         tiltError=pixy.blocks[0].y-Y_CENTER;
 	size=pixy.blocks[0].width*pixy.blocks[0].height;
+	size+=size;
+	size-=size>>3;
 
         panLoop.update(panError);
         tiltLoop.update(tiltError);
@@ -228,7 +230,6 @@ void troubleShoot()
 		Serial.print("\t");
 		Serial.println(followError);
 	*/
-		Serial.println(Pgain);
                 pastTime=millis();
         }
 }
