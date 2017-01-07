@@ -44,8 +44,8 @@ public:
         int32_t m_dgain;
 };
 
-ServoLoop panLoop(450,650);
-ServoLoop tiltLoop(650,850);
+ServoLoop panLoop(400,650);
+ServoLoop tiltLoop(500,850);
 
 ServoLoop::ServoLoop(int32_t pgain, int32_t dgain)
 {

@@ -29,7 +29,7 @@ int32_t followError;
 int32_t lmspeed=0;
 int32_t rmspeed=0;
 const int speedMin=-100;
-const int speedMax=100;
+const int speedMax=200;
 
 union siz2bytes
 {
