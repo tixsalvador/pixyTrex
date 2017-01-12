@@ -28,6 +28,7 @@ int32_t followError;
 
 int32_t lmspeed=0;
 int32_t rmspeed=0;
+int32_t fspeed=0;
 const int speedMin=-100;
 const int speedMax=200;
 
@@ -182,9 +183,8 @@ void loop()
 	#endif
 	
 	#ifndef USE_MAXSONAR
-		lmspeed=constrain(speedMax-(size/70),speedMin,speedMax);
-		rmspeed=constrain(speedMax-(size/70),speedMin,speedMax);
-		motors(lmspeed,rmspeed);
+		fspeed=constrain(speedMax-(size/70),speedMin,speedMax);
+		motors(fspeed,fspeed); // Change this to LR speed
 	#endif
 
 	troubleShoot();
