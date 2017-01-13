@@ -29,7 +29,7 @@ int32_t followError;
 int32_t lmspeed=0;
 int32_t rmspeed=0;
 int32_t fspeed=0;
-const int speedMin=-100;
+const int speedMin=-150;
 const int speedMax=200;
 
 union siz2bytes
@@ -195,11 +195,7 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=1000;
         if((currentTime=millis()-pastTime)>=interval){
-		Serial.print(lmspeed);
-		Serial.print("\t");
-		Serial.print(rmspeed);
-		Serial.print("\t");
-		Serial.println(size);
+		Serial.println(followError);
                 pastTime=millis();
         }
 }
