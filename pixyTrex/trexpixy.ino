@@ -31,6 +31,7 @@ int32_t rmspeed=0;
 int32_t fspeed=0;
 const int speedMin=-150;
 const int speedMax=200;
+int32_t differential;
 
 union siz2bytes
 {
@@ -184,7 +185,10 @@ void loop()
 	
 	#ifndef USE_MAXSONAR
 		fspeed=constrain(speedMax-(size/70),speedMin,speedMax);
-		motors(fspeed,fspeed); // Change this to LR speed
+		differential=(followError+(followError*fspeed))>>8;
+		lmspeed=constrain(fspeed+differential,speedMin,speedMax);
+		rmspeed=constrain(fspeed-differential,speedMin,speedMax);
+		motors(lmspeed,rmspeed); 
 	#endif
 
 	troubleShoot();
@@ -195,7 +199,17 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=1000;
         if((currentTime=millis()-pastTime)>=interval){
-		Serial.println(followError);
+		Serial.print(size);
+		Serial.print("\t");
+		Serial.print(followError);
+		Serial.print("\t");
+		Serial.print(fspeed);
+	 	Serial.print("\t");
+		Serial.print(differential);	
+		Serial.print("\t");
+		Serial.print(lmspeed);
+		Serial.print("\t");
+		Serial.println(rmspeed);
                 pastTime=millis();
         }
 }
