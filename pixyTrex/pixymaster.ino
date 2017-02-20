@@ -230,6 +230,7 @@ void troubleShoot()
 		Serial.print("\t");
 		Serial.println(followError);
 	*/
+		Serial.println(size);
                 pastTime=millis();
         }
 }
