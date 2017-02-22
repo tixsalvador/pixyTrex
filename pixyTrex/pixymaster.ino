@@ -31,6 +31,8 @@ int Dgain=100;
 uint32_t pastTime=0;
 uint32_t pastTime2=0;
 
+uint16_t blocks;
+
 class ServoLoop
 {
 public:
@@ -125,27 +127,24 @@ byte  I2Caddress()
 
 void track_object()
 {
-    uint16_t blocks;
-    int32_t panError, tiltError;
 
-    blocks=pixy.getBlocks();
+        int32_t panError, tiltError;
 
-    if (blocks)
-    {
+        blocks=pixy.getBlocks();
+
         panError=X_CENTER-pixy.blocks[0].x;
         tiltError=pixy.blocks[0].y-Y_CENTER;
-	size=pixy.blocks[0].width*pixy.blocks[0].height;
-	size+=size;
-	size-=size>>3;
+        size=pixy.blocks[0].width*pixy.blocks[0].height;
+        size+=size;
+        size-=size>>3;
 
         panLoop.update(panError);
         tiltLoop.update(tiltError);
 
         pixy.setServos(panLoop.m_pos,tiltLoop.m_pos);
 
-	followError=PIXY_RCS_CENTER_POS-panLoop.m_pos;
-	
-    }
+        followError=PIXY_RCS_CENTER_POS-panLoop.m_pos;
+
 }
 
 void sendToTrex()
@@ -155,38 +154,38 @@ void sendToTrex()
         buffer[1]=leftSonar.pwDistance&0xFF;
         buffer[2]=rightSonar.pwDistance>>8;
         buffer[3]=rightSonar.pwDistance&0xFF;
-	buffer[4]=Pgain>>8;
+        buffer[4]=Pgain>>8;
         buffer[5]=Pgain&0xFF;
         buffer[6]=Igain>>8;
         buffer[7]=Igain&0xFF;
         buffer[8]=Dgain>>8;
         buffer[9]=Dgain&0xFF;
-	buffer[10]=followError>>8;
-	buffer[11]=followError&0xFF;
+        buffer[10]=followError>>8;
+        buffer[11]=followError&0xFF;
 
-	union siz2bytes
-	{
-		float sizf;
-		byte sizb[sizeof(float)];
-	};
-	siz2bytes si2b;
-	si2b.sizf=size;
-	buffer[12]=si2b.sizb[0];
-	buffer[13]=si2b.sizb[1];
-	buffer[14]=si2b.sizb[2];
-	buffer[15]=si2b.sizb[3];
+        union siz2bytes
+        {
+                float sizf;
+                byte sizb[sizeof(float)];
+        };
+        siz2bytes si2b;
+        si2b.sizf=size;
+        buffer[12]=si2b.sizb[0];
+        buffer[13]=si2b.sizb[1];
+        buffer[14]=si2b.sizb[2];
+        buffer[15]=si2b.sizb[3];
 
         Wire.write(buffer,sizeof(buffer));
 }
 
 void gains_calibration(int recieverPin)
 {
-	uint32_t currentTime;
+        uint32_t currentTime;
         const int interval=1000;
         if((currentTime=millis()-pastTime2)>=interval){
                 Pgain=pulseIn(recieverPin,HIGH);
-		Pgain=map(Pgain,984,1966,-255,255);
-		Pgain=constrain(Pgain,-255,255);
+                Pgain=map(Pgain,984,1966,-255,255);
+                Pgain=constrain(Pgain,-255,255);
                 pastTime2=millis();
         }
 
@@ -194,14 +193,20 @@ void gains_calibration(int recieverPin)
 
 void loop()
 {
-        track_object();
-
-        leftSonar.readSonar(A2);
-        rightSonar.readSonar(A1);
-	
-//	gains_calibration(A3);
-
+        if(blocks){
+                track_object();
+        }
+        else{
+                size=0;
+        }
         troubleShoot();
+
+//        leftSonar.readSonar(A2);
+//        rightSonar.readSonar(A1);
+
+//      gains_calibration(A3);
+
+
 }
 
 void troubleShoot()
@@ -209,7 +214,7 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=500;
         if((currentTime=millis()-pastTime)>=interval){
-	/*
+        /*
         //      Serial.print(leftSonar.pwDistance);
         //      Serial.print(potentiometer);
         //      Serial.print("\t");
@@ -226,11 +231,11 @@ void troubleShoot()
         //        Serial.print(Input);
         //        Serial.print("\t");
         //        Serial.println(MotorSpeed);
-		Serial.print(panLoop.m_pos);
-		Serial.print("\t");
-		Serial.println(followError);
-	*/
-		Serial.println(size);
+                Serial.print(panLoop.m_pos);
+                Serial.print("\t");
+                Serial.println(followError);
+        */
+                Serial.println(size);
                 pastTime=millis();
         }
 }
