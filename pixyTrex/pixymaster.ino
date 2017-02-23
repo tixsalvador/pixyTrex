@@ -130,8 +130,6 @@ void track_object()
 
         int32_t panError, tiltError;
 
-        blocks=pixy.getBlocks();
-
         panError=X_CENTER-pixy.blocks[0].x;
         tiltError=pixy.blocks[0].y-Y_CENTER;
         size=pixy.blocks[0].width*pixy.blocks[0].height;
@@ -193,6 +191,8 @@ void gains_calibration(int recieverPin)
 
 void loop()
 {
+        blocks=pixy.getBlocks();
+        
         if(blocks){
                 track_object();
         }
