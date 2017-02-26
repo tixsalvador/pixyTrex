@@ -196,10 +196,7 @@ void loop()
         if(blocks){
                 track_object();
         }
-        else{
-                size=0;
-        }
-        troubleShoot();
+//        troubleShoot();
 
 //        leftSonar.readSonar(A2);
 //        rightSonar.readSonar(A1);
