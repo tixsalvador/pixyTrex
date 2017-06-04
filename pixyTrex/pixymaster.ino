@@ -30,6 +30,7 @@ int Dgain=100;
 //For troubleshooting delay()
 uint32_t pastTime=0;
 uint32_t pastTime2=0;
+uint32_t pastTimeBlock=0;
 
 uint16_t blocks;
 
@@ -195,10 +196,13 @@ void loop()
         
         if(blocks){
                 track_object();
+		pastTimeBlock=millis();
         }
+	else if(millis()-pastTimeBlock>100){
+		size=0;
+	}
 
-
-//      troubleShoot();
+        troubleShoot();
 
 //      leftSonar.readSonar(A2);
 //      rightSonar.readSonar(A1);

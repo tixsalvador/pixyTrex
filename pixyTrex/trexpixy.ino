@@ -33,8 +33,6 @@ const int speedMin=-150;
 const int speedMax=200;
 int32_t differential;
 
-//byte brakeSignal;
-
 union siz2bytes
 {
 	float sizf;
@@ -154,7 +152,6 @@ void getMasterData()
 		si2b.sizb[2]=Wire.read();
 		si2b.sizb[3]=Wire.read();
 		size=(long)si2b.sizf;
-//		brakeSignal=Wire.read();
         }
         else {
                 Serial.println("Cannot connect to Master");
@@ -163,8 +160,8 @@ void getMasterData()
 
 void motors(int leftSpeed, int rightSpeed)
 {
-        digitalWrite(leftMotorBreakPin,size<0);
-        digitalWrite(rightMotorBreakPin,size<0);
+        digitalWrite(leftMotorBreakPin,size<100);
+        digitalWrite(rightMotorBreakPin,size<100);
         digitalWrite(leftMotorDirPin,leftSpeed<0);
         digitalWrite(rightMotorDirPin,rightSpeed<0);
         analogWrite(leftMotorPWMPin,abs(leftSpeed));
@@ -203,7 +200,6 @@ void troubleShoot()
         const int interval=1000;
         if((currentTime=millis()-pastTime)>=interval){
 		Serial.println(size);
-		
                 pastTime=millis();
         }
 }
