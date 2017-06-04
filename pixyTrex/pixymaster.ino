@@ -196,10 +196,12 @@ void loop()
         if(blocks){
                 track_object();
         }
-//        troubleShoot();
 
-//        leftSonar.readSonar(A2);
-//        rightSonar.readSonar(A1);
+
+//      troubleShoot();
+
+//      leftSonar.readSonar(A2);
+//      rightSonar.readSonar(A1);
 
 //      gains_calibration(A3);
 
