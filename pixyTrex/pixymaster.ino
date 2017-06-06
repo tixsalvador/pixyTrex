@@ -193,6 +193,9 @@ void gains_calibration(int recieverPin)
 void loop()
 {
         blocks=pixy.getBlocks();
+	
+	leftSonar.readSonar(A2);	
+	rightSonar.readSonar(A1);
         
         if(blocks){
                 track_object();
@@ -202,10 +205,7 @@ void loop()
 		size=0;
 	}
 
-        troubleShoot();
-
-//      leftSonar.readSonar(A2);
-//      rightSonar.readSonar(A1);
+//      troubleShoot();
 
 //      gains_calibration(A3);
 
@@ -217,10 +217,12 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=500;
         if((currentTime=millis()-pastTime)>=interval){
-        /*
-        //      Serial.print(leftSonar.pwDistance);
+        
+                Serial.print(leftSonar.pwDistance);
+              	Serial.print("\t");
+		Serial.println(rightSonar.pwDistance);
+	/*
         //      Serial.print(potentiometer);
-        //      Serial.print("\t");
         //      Serial.print(leftSonarError);
         //      Serial.print("\t");
         //      Serial.print(proportional);
@@ -230,7 +232,6 @@ void troubleShoot()
         //      Serial.println(MotorSpeed);
         //      Serial.print(leftSonar.pwDistance);
         //      Serial.print("\t");
-        //      Serial.println(rightSonar.pwDistance);
         //        Serial.print(Input);
         //        Serial.print("\t");
         //        Serial.println(MotorSpeed);
@@ -238,7 +239,6 @@ void troubleShoot()
                 Serial.print("\t");
                 Serial.println(followError);
         */
-                Serial.println(size);
                 pastTime=millis();
         }
 }

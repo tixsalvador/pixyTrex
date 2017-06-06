@@ -199,7 +199,9 @@ void troubleShoot()
         uint32_t currentTime;
         const int interval=1000;
         if((currentTime=millis()-pastTime)>=interval){
-		Serial.println(size);
+		Serial.print(LMaxSensor);
+		Serial.print("\t");
+		Serial.println(RMaxSensor);
                 pastTime=millis();
         }
 }
