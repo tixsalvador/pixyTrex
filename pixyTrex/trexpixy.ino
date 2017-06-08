@@ -168,6 +168,12 @@ void motors(int leftSpeed, int rightSpeed)
         analogWrite(rightMotorPWMPin,abs(rightSpeed));
 }
 
+void motorBreak()
+{
+	digitalWrite(leftMotorBreakPin,1);
+        digitalWrite(rightMotorBreakPin,1);	
+}
+
 void loop()
 {
         delay(100);
@@ -184,11 +190,11 @@ void loop()
 	#endif
 	
 	#ifndef USE_MAXSONAR
-		fspeed=constrain(speedMax-(size/70),speedMin,speedMax);
-		differential=(followError+(followError*fspeed))>>8;
-		lmspeed=constrain(fspeed+differential,speedMin,speedMax);
-		rmspeed=constrain(fspeed-differential,speedMin,speedMax);
-		motors(lmspeed,rmspeed); 
+			fspeed=constrain(speedMax-(size/70),speedMin,speedMax);
+			differential=(followError+(followError*fspeed))>>8;
+			lmspeed=constrain(fspeed+differential,speedMin,speedMax);
+			rmspeed=constrain(fspeed-differential,speedMin,speedMax);
+			motors(lmspeed,rmspeed);
 	#endif
 
 	troubleShoot();
@@ -201,7 +207,9 @@ void troubleShoot()
         if((currentTime=millis()-pastTime)>=interval){
 		Serial.print(LMaxSensor);
 		Serial.print("\t");
-		Serial.println(RMaxSensor);
+		Serial.print(RMaxSensor);
+		Serial.print("\t");
+		Serial.println(size);
                 pastTime=millis();
         }
 }
